@@ -42,36 +42,40 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 3. Extract the token (remove "Bearer " prefix)
         final String jwt = authHeader.substring(7);
 
-        // 4. Extract the email from the token
-        final String userEmail = jwtService.extractUsername(jwt);
+        try {
+            // 4. Extract the email from the token
+            final String userEmail = jwtService.extractUsername(jwt);
 
-        // 5. If we have an email and no authentication exists yet
-        if (userEmail != null &&
-                SecurityContextHolder.getContext().getAuthentication() == null) {
+            // 5. If we have an email and no authentication exists yet
+            if (userEmail != null &&
+                    SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            // 6. Load the user from the database
-            UserDetails userDetails =
-                    this.userDetailsService.loadUserByUsername(userEmail);
+                // 6. Load the user from the database
+                UserDetails userDetails =
+                        this.userDetailsService.loadUserByUsername(userEmail);
 
-            // 7. Validate the token
-            if (jwtService.isTokenValid(jwt, userDetails)) {
+                // 7. Validate the token
+                if (jwtService.isTokenValid(jwt, userDetails)) {
 
-                // 8. Create authentication token and set it in context
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
+                    // 8. Create authentication token and set it in context
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
 
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource()
-                                .buildDetails(request)
-                );
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource()
+                                    .buildDetails(request)
+                    );
 
-                SecurityContextHolder.getContext()
-                        .setAuthentication(authToken);
+                    SecurityContextHolder.getContext()
+                            .setAuthentication(authToken);
+                }
             }
+        } catch (Exception ignored) {
+            // Token is expired or invalid — just continue without authentication
         }
 
         // 9. Continue the filter chain
