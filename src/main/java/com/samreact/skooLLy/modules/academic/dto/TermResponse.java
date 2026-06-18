@@ -1,5 +1,6 @@
 package com.samreact.skooLLy.modules.academic.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.samreact.skooLLy.modules.academic.entity.enums.TermStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,6 +19,7 @@ public class TermResponse {
     private LocalDate startDate;
     private LocalDate endDate;
     private TermStatus status;
+    @JsonProperty("isCurrent")
     private boolean isCurrent;
     private LocalDateTime createdAt;
 }
