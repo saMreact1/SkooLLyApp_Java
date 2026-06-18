@@ -5,6 +5,8 @@ import com.samreact.skooLLy.exception.DuplicateResourceException;
 import com.samreact.skooLLy.exception.ResourceNotFoundException;
 import com.samreact.skooLLy.modules.school.entity.School;
 import com.samreact.skooLLy.modules.school.repository.SchoolRepository;
+import com.samreact.skooLLy.common.response.PagedResponse;
+import com.samreact.skooLLy.common.util.PageUtil;
 import com.samreact.skooLLy.modules.teacher.dto.*;
 import com.samreact.skooLLy.modules.teacher.entity.Teacher;
 import com.samreact.skooLLy.modules.teacher.entity.enums.TeacherStatus;
@@ -15,6 +17,8 @@ import com.samreact.skooLLy.modules.user.entity.User;
 import com.samreact.skooLLy.modules.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -118,14 +122,13 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Override
     @Transactional
-    public List<TeacherResponseDTO> getAllTeachers() {
+    public PagedResponse<TeacherResponseDTO> getAllTeachers(int page, int size) {
         Long schoolId = currentUserService.getCurrentSchoolId();
 
-        return teacherRepository
-                .findAllBySchoolIdAndDeleted(schoolId, false)
-                .stream()
-                .map(this::mapToTeacherResponseDTO)
-                .toList();
+        Page<Teacher> teacherPage = teacherRepository
+                .findAllBySchoolIdAndDeleted(schoolId, false, PageRequest.of(page, size));
+
+        return PageUtil.from(teacherPage, this::mapToTeacherResponseDTO);
     }
 
     @Override

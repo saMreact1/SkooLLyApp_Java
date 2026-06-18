@@ -16,9 +16,14 @@ import com.samreact.skooLLy.modules.teacher.entity.Teacher;
 import com.samreact.skooLLy.modules.teacher.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.samreact.skooLLy.common.response.PagedResponse;
+import com.samreact.skooLLy.common.util.PageUtil;
 
 import java.util.List;
 
@@ -90,14 +95,13 @@ public class AcademicServiceImpl implements AcademicService {
 
     @Override
     @Transactional
-    public List<SessionResponse> getAllSessions() {
+    public PagedResponse<SessionResponse> getAllSessions(int page, int size) {
         Long schoolId = currentUserService.getCurrentSchoolId();
 
-        return sessionRepository
-                .findAllBySchoolId(schoolId)
-                .stream()
-                .map(this::mapToSessionResponse)
-                .toList();
+        Page<AcademicSession> sessionPage = sessionRepository
+                .findAllBySchoolId(schoolId, PageRequest.of(page, size));
+
+        return PageUtil.from(sessionPage, this::mapToSessionResponse);
     }
 
     @Override
@@ -370,14 +374,13 @@ public class AcademicServiceImpl implements AcademicService {
 
     @Override
     @Transactional
-    public List<SubjectResponse> getAllSubjects() {
+    public PagedResponse<SubjectResponse> getAllSubjects(int page, int size) {
         Long schoolId = currentUserService.getCurrentSchoolId();
 
-        return subjectRepository
-                .findAllBySchoolId(schoolId)
-                .stream()
-                .map(this::mapToSubjectResponse)
-                .toList();
+        Page<Subject> subjectPage = subjectRepository
+                .findAllBySchoolId(schoolId, PageRequest.of(page, size));
+
+        return PageUtil.from(subjectPage, this::mapToSubjectResponse);
     }
 
     @Override
@@ -509,14 +512,13 @@ public class AcademicServiceImpl implements AcademicService {
 
     @Override
     @Transactional
-    public List<ClassroomResponse> getAllClassrooms() {
+    public PagedResponse<ClassroomResponse> getAllClassrooms(int page, int size) {
         Long schoolId = currentUserService.getCurrentSchoolId();
 
-        return classroomRepository
-                .findAllBySchoolId(schoolId)
-                .stream()
-                .map(this::mapToClassroomResponse)
-                .toList();
+        Page<Classroom> classroomPage = classroomRepository
+                .findAllBySchoolId(schoolId, PageRequest.of(page, size));
+
+        return PageUtil.from(classroomPage, this::mapToClassroomResponse);
     }
 
     @Override
@@ -640,7 +642,7 @@ public class AcademicServiceImpl implements AcademicService {
 
         // Check for classroom scheduling conflict
         if (timetableRepository
-                .existsByClassroomIdAndTermIdAndDayOfWeekAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
+                .existsByClassroomIdAndTermIdAndDayOfWeekAndStartTimeLessThanAndEndTimeGreaterThan(
                         request.getClassroomId(),
                         request.getTermId(),
                         request.getDayOfWeek(),
@@ -654,7 +656,7 @@ public class AcademicServiceImpl implements AcademicService {
 
         // Check for teacher scheduling conflict
         if (timetableRepository
-                .existsByTeacherIdAndTermIdAndDayOfWeekAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
+                .existsByTeacherIdAndTermIdAndDayOfWeekAndStartTimeLessThanAndEndTimeGreaterThan(
                         request.getTeacherId(),
                         request.getTermId(),
                         request.getDayOfWeek(),

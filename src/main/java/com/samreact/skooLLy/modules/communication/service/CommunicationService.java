@@ -1,20 +1,19 @@
 package com.samreact.skooLLy.modules.communication.service;
 
+import com.samreact.skooLLy.common.response.PagedResponse;
 import com.samreact.skooLLy.modules.communication.dto.*;
 import com.samreact.skooLLy.modules.communication.entity.enums.AnnouncementTarget;
-
-import java.util.List;
 
 public interface CommunicationService {
     AnnouncementResponse createAnnouncement(CreateAnnouncementRequest request);
 
     AnnouncementResponse getAnnouncementById(Long id);
 
-    List<AnnouncementResponse> getAllAnnouncements();
+    PagedResponse<AnnouncementResponse> getAllAnnouncements(int page, int size);
 
-    List<AnnouncementResponse> getAnnouncementsByTarget(AnnouncementTarget target);
+    PagedResponse<AnnouncementResponse> getAnnouncementsByTarget(AnnouncementTarget target, int page, int size);
 
-    List<AnnouncementResponse> getVisibleAnnouncements(AnnouncementTarget target);
+    PagedResponse<AnnouncementResponse> getVisibleAnnouncements(AnnouncementTarget target, int page, int size);
 
     AnnouncementResponse updateAnnouncement(Long id, UpdateAnnouncementRequest request);
 

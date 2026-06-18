@@ -1,5 +1,6 @@
 package com.samreact.skooLLy.modules.teacher.service;
 
+import com.samreact.skooLLy.common.response.PagedResponse;
 import com.samreact.skooLLy.modules.teacher.dto.CreateTeacherRequestDTO;
 import com.samreact.skooLLy.modules.teacher.dto.TeacherResponseDTO;
 import com.samreact.skooLLy.modules.teacher.dto.UpdateTeacherRequestDTO;
@@ -12,7 +13,7 @@ public interface TeacherService {
 
     TeacherResponseDTO getTeacherById(Long id);
 
-    List<TeacherResponseDTO> getAllTeachers();
+    PagedResponse<TeacherResponseDTO> getAllTeachers(int page, int size);
 
     TeacherResponseDTO updateTeacher(Long id, UpdateTeacherRequestDTO request);
 

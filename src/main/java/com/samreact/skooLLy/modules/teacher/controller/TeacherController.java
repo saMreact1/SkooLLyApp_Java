@@ -1,6 +1,7 @@
 package com.samreact.skooLLy.modules.teacher.controller;
 
 import com.samreact.skooLLy.common.response.ApiResponse;
+import com.samreact.skooLLy.common.response.PagedResponse;
 import com.samreact.skooLLy.modules.teacher.dto.*;
 import com.samreact.skooLLy.modules.teacher.entity.enums.TeacherStatus;
 import com.samreact.skooLLy.modules.teacher.service.TeacherService;
@@ -48,10 +49,11 @@ public class TeacherController {
      */
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    public ResponseEntity<ApiResponse<List<TeacherResponseDTO>>> getAllTeachers() {
+    public ResponseEntity<ApiResponse<PagedResponse<TeacherResponseDTO>>> getAllTeachers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
 
-        List<TeacherResponseDTO> teachers =
-                teacherService.getAllTeachers();
+        PagedResponse<TeacherResponseDTO> teachers = teacherService.getAllTeachers(page, size);
 
         return ResponseEntity.ok(ApiResponse.success("Teachers retrieved successfully", teachers));
     }

@@ -1,5 +1,7 @@
 package com.samreact.skooLLy.modules.communication.service.implementation;
 
+import com.samreact.skooLLy.common.response.PagedResponse;
+import com.samreact.skooLLy.common.util.PageUtil;
 import com.samreact.skooLLy.config.CurrentUserService;
 import com.samreact.skooLLy.exception.ResourceNotFoundException;
 import com.samreact.skooLLy.modules.communication.dto.*;
@@ -11,11 +13,11 @@ import com.samreact.skooLLy.modules.user.entity.User;
 import com.samreact.skooLLy.modules.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Slf4j
 @Service
@@ -71,38 +73,35 @@ public class CommunicationServiceImpl implements CommunicationService {
 
     @Override
     @Transactional
-    public List<AnnouncementResponse> getAllAnnouncements() {
+    public PagedResponse<AnnouncementResponse> getAllAnnouncements(int page, int size) {
         Long schoolId = currentUserService.getCurrentSchoolId();
 
-        return announcementRepository
-                .findAllBySchoolIdOrderByCreatedAtDesc(schoolId)
-                .stream()
-                .map(this::mapToAnnouncementResponse)
-                .toList();
+        Page<Announcement> announcementPage = announcementRepository
+                .findAllBySchoolIdOrderByCreatedAtDesc(schoolId, PageRequest.of(page, size));
+
+        return PageUtil.from(announcementPage, this::mapToAnnouncementResponse);
     }
 
     @Override
     @Transactional
-    public List<AnnouncementResponse> getAnnouncementsByTarget(AnnouncementTarget target) {
+    public PagedResponse<AnnouncementResponse> getAnnouncementsByTarget(AnnouncementTarget target, int page, int size) {
         Long schoolId = currentUserService.getCurrentSchoolId();
 
-        return announcementRepository
-                .findAllBySchoolIdAndTargetOrderByCreatedAtDesc(schoolId, target)
-                .stream()
-                .map(this::mapToAnnouncementResponse)
-                .toList();
+        Page<Announcement> announcementPage = announcementRepository
+                .findAllBySchoolIdAndTargetOrderByCreatedAtDesc(schoolId, target, PageRequest.of(page, size));
+
+        return PageUtil.from(announcementPage, this::mapToAnnouncementResponse);
     }
 
     @Override
     @Transactional
-    public List<AnnouncementResponse> getVisibleAnnouncements(AnnouncementTarget target) {
+    public PagedResponse<AnnouncementResponse> getVisibleAnnouncements(AnnouncementTarget target, int page, int size) {
         Long schoolId = currentUserService.getCurrentSchoolId();
 
-        return announcementRepository
-                .findVisibleAnnouncements(schoolId, target)
-                .stream()
-                .map(this::mapToAnnouncementResponse)
-                .toList();
+        Page<Announcement> announcementPage = announcementRepository
+                .findVisibleAnnouncements(schoolId, target, PageRequest.of(page, size));
+
+        return PageUtil.from(announcementPage, this::mapToAnnouncementResponse);
     }
 
     @Override
