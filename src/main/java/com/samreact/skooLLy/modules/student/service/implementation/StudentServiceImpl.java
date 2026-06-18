@@ -1,5 +1,7 @@
 package com.samreact.skooLLy.modules.student.service.implementation;
 
+import com.samreact.skooLLy.common.response.PagedResponse;
+import com.samreact.skooLLy.common.util.PageUtil;
 import com.samreact.skooLLy.config.CurrentUserService;
 import com.samreact.skooLLy.exception.BusinessException;
 import com.samreact.skooLLy.exception.DuplicateResourceException;
@@ -19,6 +21,8 @@ import com.samreact.skooLLy.modules.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -124,26 +128,24 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional
-    public List<StudentResponseDTO> getAllStudents() {
+    public PagedResponse<StudentResponseDTO> getAllStudents(int page, int size) {
         Long schoolId = currentUserService.getCurrentSchoolId();
 
-        return studentRepository
-                .findAllBySchoolIdAndDeleted(schoolId, false)
-                .stream()
-                .map(this::mapToStudentResponse)
-                .toList();
+        Page<Student> studentPage = studentRepository
+                .findAllBySchoolIdAndDeleted(schoolId, false, PageRequest.of(page, size));
+
+        return PageUtil.from(studentPage, this::mapToStudentResponse);
     }
 
     @Override
     @Transactional
-    public List<StudentResponseDTO> getStudentsByClass(String className) {
+    public PagedResponse<StudentResponseDTO> getStudentsByClass(String className, int page, int size) {
         Long schoolId = currentUserService.getCurrentSchoolId();
 
-        return studentRepository
-                .findAllBySchoolIdAndCurrentClassAndDeleted(schoolId, className, false)
-                .stream()
-                .map(this::mapToStudentResponse)
-                .toList();
+        Page<Student> studentPage = studentRepository
+                .findAllBySchoolIdAndCurrentClassAndDeleted(schoolId, className, false, PageRequest.of(page, size));
+
+        return PageUtil.from(studentPage, this::mapToStudentResponse);
     }
 
     @Override

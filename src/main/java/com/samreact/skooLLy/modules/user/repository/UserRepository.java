@@ -1,6 +1,8 @@
 package com.samreact.skooLLy.modules.user.repository;
 
 import com.samreact.skooLLy.modules.user.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,6 +27,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findBySchoolIdAndDeleted(Long schoolId, boolean deleted);
 
+    Page<User> findBySchoolIdAndDeleted(Long schoolId, boolean deleted, Pageable pageable);
+
     Optional<User> findByPhoneNumberAndDeleted(String phoneNumber, boolean deleted);
 
     @Query("""
@@ -41,6 +45,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> searchByQuery(@Param("schoolId") Long schoolId,
                              @Param("currentUserId") Long currentUserId,
                              @Param("query") String query);
+
+    @Query("SELECT u FROM User u WHERE u.school.id = :schoolId AND u.id != :currentUserId AND u.deleted = false " +
+           "AND (LOWER(u.firstName) LIKE LOWER(CONCAT('%', :query, '%')) " +
+           "OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :query, '%')) " +
+           "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :query, '%')))")
+    Page<User> searchByQuery(@Param("schoolId") Long schoolId,
+                             @Param("currentUserId") Long currentUserId,
+                             @Param("query") String query,
+                             Pageable pageable);
 
     @Query("SELECT u.school.id FROM User u WHERE u.email = :email AND u.deleted = false")
     Long getSchoolIdByEmail(@Param("email") String email);

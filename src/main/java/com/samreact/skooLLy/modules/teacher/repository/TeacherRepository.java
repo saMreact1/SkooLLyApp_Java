@@ -2,6 +2,8 @@ package com.samreact.skooLLy.modules.teacher.repository;
 
 import com.samreact.skooLLy.modules.teacher.entity.Teacher;
 import com.samreact.skooLLy.modules.teacher.entity.enums.TeacherStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,6 +14,8 @@ import java.util.Optional;
 public interface TeacherRepository extends JpaRepository<Teacher, Long> {
     List<Teacher> findAllBySchoolIdAndDeleted(Long schoolId, boolean deleted);
 
+    Page<Teacher> findAllBySchoolIdAndDeleted(Long schoolId, boolean deleted, Pageable pageable);
+
     Optional<Teacher> findByIdAndSchoolId(Long id, Long schoolId);
 
     Optional<Teacher> findByIdAndSchoolIdAndDeleted(Long id, Long schoolId, boolean deleted);
@@ -21,6 +25,8 @@ public interface TeacherRepository extends JpaRepository<Teacher, Long> {
     Optional<Teacher> findByUserIdAndDeleted(Long userId, boolean deleted);
 
     List<Teacher> findAllBySchoolIdAndStatusAndDeleted(Long schoolId, TeacherStatus status, boolean deleted);
+
+    Page<Teacher> findAllBySchoolIdAndStatusAndDeleted(Long schoolId, TeacherStatus status, boolean deleted, Pageable pageable);
 
     boolean existsByStaffIdAndSchoolIdAndDeleted(String staffId, Long schoolId, boolean deleted);
 

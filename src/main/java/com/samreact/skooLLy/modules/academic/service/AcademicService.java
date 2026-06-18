@@ -1,5 +1,6 @@
 package com.samreact.skooLLy.modules.academic.service;
 
+import com.samreact.skooLLy.common.response.PagedResponse;
 import com.samreact.skooLLy.modules.academic.dto.*;
 
 import java.util.List;
@@ -9,7 +10,7 @@ public interface AcademicService {
 
     SessionResponse getSessionById(Long id);
 
-    List<SessionResponse> getAllSessions();
+    PagedResponse<SessionResponse> getAllSessions(int page, int size);
 
     SessionResponse setCurrentSession(Long id);
 
@@ -33,7 +34,7 @@ public interface AcademicService {
 
     SubjectResponse getSubjectById(Long id);
 
-    List<SubjectResponse> getAllSubjects();
+    PagedResponse<SubjectResponse> getAllSubjects(int page, int size);
 
     List<SubjectResponse> getElectiveSubjects();
 
@@ -45,7 +46,7 @@ public interface AcademicService {
 
     ClassroomResponse getClassroomById(Long id);
 
-    List<ClassroomResponse> getAllClassrooms();
+    PagedResponse<ClassroomResponse> getAllClassrooms(int page, int size);
 
     List<ClassroomResponse> getClassroomsByLevel(String level);
 

@@ -2,6 +2,8 @@ package com.samreact.skooLLy.modules.academic.repository;
 
 import com.samreact.skooLLy.modules.academic.entity.AcademicSession;
 import com.samreact.skooLLy.modules.academic.entity.enums.SessionStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +13,8 @@ import java.util.Optional;
 @Repository
 public interface AcademicSessionRepository extends JpaRepository<AcademicSession, Long> {
     List<AcademicSession> findAllBySchoolId(Long schoolId);
+
+    Page<AcademicSession> findAllBySchoolId(Long schoolId, Pageable pageable);
 
     Optional<AcademicSession> findByIdAndSchoolId(
             Long id, Long schoolId);

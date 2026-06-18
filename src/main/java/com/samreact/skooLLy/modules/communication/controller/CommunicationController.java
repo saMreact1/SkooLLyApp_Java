@@ -1,6 +1,7 @@
 package com.samreact.skooLLy.modules.communication.controller;
 
 import com.samreact.skooLLy.common.response.ApiResponse;
+import com.samreact.skooLLy.common.response.PagedResponse;
 import com.samreact.skooLLy.modules.communication.dto.*;
 import com.samreact.skooLLy.modules.communication.entity.enums.AnnouncementTarget;
 import com.samreact.skooLLy.modules.communication.service.CommunicationService;
@@ -11,8 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -35,8 +34,10 @@ public class CommunicationController {
 
     @GetMapping("/announcements")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
-    public ResponseEntity<ApiResponse<List<AnnouncementResponse>>> getAllAnnouncements() {
-        List<AnnouncementResponse> announcements = communicationService.getAllAnnouncements();
+    public ResponseEntity<ApiResponse<PagedResponse<AnnouncementResponse>>> getAllAnnouncements(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        PagedResponse<AnnouncementResponse> announcements = communicationService.getAllAnnouncements(page, size);
 
         return ResponseEntity.ok(
                 ApiResponse.success("Announcements retrieved successfully", announcements));
@@ -55,10 +56,12 @@ public class CommunicationController {
 
     @GetMapping("/announcements/target/{target}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
-    public ResponseEntity<ApiResponse<List<AnnouncementResponse>>> getAnnouncementsByTarget(
-            @PathVariable AnnouncementTarget target) {
+    public ResponseEntity<ApiResponse<PagedResponse<AnnouncementResponse>>> getAnnouncementsByTarget(
+            @PathVariable AnnouncementTarget target,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
 
-        List<AnnouncementResponse> announcements = communicationService.getAnnouncementsByTarget(target);
+        PagedResponse<AnnouncementResponse> announcements = communicationService.getAnnouncementsByTarget(target, page, size);
 
         return ResponseEntity.ok(
                 ApiResponse.success("Announcements retrieved successfully", announcements));
@@ -66,10 +69,12 @@ public class CommunicationController {
 
     @GetMapping("/announcements/visible")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT', 'PARENT')")
-    public ResponseEntity<ApiResponse<List<AnnouncementResponse>>> getVisibleAnnouncements(
-            @RequestParam AnnouncementTarget target) {
+    public ResponseEntity<ApiResponse<PagedResponse<AnnouncementResponse>>> getVisibleAnnouncements(
+            @RequestParam AnnouncementTarget target,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
 
-        List<AnnouncementResponse> announcements = communicationService.getVisibleAnnouncements(target);
+        PagedResponse<AnnouncementResponse> announcements = communicationService.getVisibleAnnouncements(target, page, size);
 
         return ResponseEntity.ok(
                 ApiResponse.success("Visible announcements retrieved successfully", announcements));

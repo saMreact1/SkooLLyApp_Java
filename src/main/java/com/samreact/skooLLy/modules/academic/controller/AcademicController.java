@@ -1,6 +1,7 @@
 package com.samreact.skooLLy.modules.academic.controller;
 
 import com.samreact.skooLLy.common.response.ApiResponse;
+import com.samreact.skooLLy.common.response.PagedResponse;
 import com.samreact.skooLLy.modules.academic.dto.*;
 import com.samreact.skooLLy.modules.academic.service.AcademicService;
 import jakarta.validation.Valid;
@@ -42,14 +43,14 @@ public class AcademicController {
      */
     @GetMapping("/sessions")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
-    public ResponseEntity<ApiResponse<List<SessionResponse>>> getAllSessions() {
+    public ResponseEntity<ApiResponse<PagedResponse<SessionResponse>>> getAllSessions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
 
-        List<SessionResponse> sessions =
-                academicService.getAllSessions();
+        PagedResponse<SessionResponse> sessions = academicService.getAllSessions(page, size);
 
         return ResponseEntity.ok(
-                ApiResponse.success(
-                        "Sessions retrieved successfully", sessions));
+                ApiResponse.success("Sessions retrieved successfully", sessions));
     }
 
     /**
@@ -229,14 +230,14 @@ public class AcademicController {
      */
     @GetMapping("/subjects")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
-    public ResponseEntity<ApiResponse<List<SubjectResponse>>> getAllSubjects() {
+    public ResponseEntity<ApiResponse<PagedResponse<SubjectResponse>>> getAllSubjects(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
 
-        List<SubjectResponse> subjects =
-                academicService.getAllSubjects();
+        PagedResponse<SubjectResponse> subjects = academicService.getAllSubjects(page, size);
 
         return ResponseEntity.ok(
-                ApiResponse.success(
-                        "Subjects retrieved successfully", subjects));
+                ApiResponse.success("Subjects retrieved successfully", subjects));
     }
 
     /**
@@ -319,15 +320,14 @@ public class AcademicController {
 
     @GetMapping("/classrooms")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
-    public ResponseEntity<ApiResponse<List<ClassroomResponse>>> getAllClassrooms() {
+    public ResponseEntity<ApiResponse<PagedResponse<ClassroomResponse>>> getAllClassrooms(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
 
-        List<ClassroomResponse> classrooms =
-                academicService.getAllClassrooms();
+        PagedResponse<ClassroomResponse> classrooms = academicService.getAllClassrooms(page, size);
 
         return ResponseEntity.ok(
-                ApiResponse.success(
-                        "Classrooms retrieved successfully",
-                        classrooms));
+                ApiResponse.success("Classrooms retrieved successfully", classrooms));
     }
 
     @GetMapping("/classrooms/{id}")

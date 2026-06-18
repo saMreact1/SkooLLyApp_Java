@@ -1,5 +1,7 @@
 package com.samreact.skooLLy.modules.user.service.implementation;
 
+import com.samreact.skooLLy.common.response.PagedResponse;
+import com.samreact.skooLLy.common.util.PageUtil;
 import com.samreact.skooLLy.config.CurrentUserService;
 import com.samreact.skooLLy.config.JwtService;
 import com.samreact.skooLLy.exception.BusinessException;
@@ -20,6 +22,8 @@ import com.samreact.skooLLy.modules.user.repository.UserRepository;
 import com.samreact.skooLLy.modules.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -189,22 +193,23 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserSearchResult> searchUsers(String query) {
+    public PagedResponse<UserSearchResult> searchUsers(String query, int page, int size) {
         Long schoolId = currentUserService.getCurrentSchoolId();
         Long currentUserId = currentUserService.getCurrentUserId();
-        List<User> users = userRepository.searchByQuery(schoolId, currentUserId, query);
-        return users.stream()
-                .map(this::mapToSearchResult)
-                .toList();
+
+        Page<User> userPage = userRepository.searchByQuery(schoolId, currentUserId, query, PageRequest.of(page, size));
+
+        return PageUtil.from(userPage, this::mapToSearchResult);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserResponseDTO> getUsersInSchool(Long schoolId) {
-        List<User> users = userRepository.findBySchoolIdAndDeleted(schoolId, false);
-        return users.stream()
-                .map(this::mapToUserResponse)
-                .toList();
+    public PagedResponse<UserResponseDTO> getUsersInSchool(int page, int size) {
+        Long schoolId = currentUserService.getCurrentSchoolId();
+
+        Page<User> userPage = userRepository.findBySchoolIdAndDeleted(schoolId, false, PageRequest.of(page, size));
+
+        return PageUtil.from(userPage, this::mapToUserResponse);
     }
 
     @Override

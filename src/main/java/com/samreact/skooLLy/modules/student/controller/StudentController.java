@@ -1,6 +1,7 @@
 package com.samreact.skooLLy.modules.student.controller;
 
 import com.samreact.skooLLy.common.response.ApiResponse;
+import com.samreact.skooLLy.common.response.PagedResponse;
 import com.samreact.skooLLy.modules.student.dto.*;
 import com.samreact.skooLLy.modules.student.entity.enums.StudentStatus;
 import com.samreact.skooLLy.modules.student.service.StudentService;
@@ -49,13 +50,14 @@ public class StudentController {
      */
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
-    public ResponseEntity<ApiResponse<List<StudentResponseDTO>>> getAllStudents() {
+    public ResponseEntity<ApiResponse<PagedResponse<StudentResponseDTO>>> getAllStudents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
 
-        List<StudentResponseDTO> students = studentService.getAllStudents();
+        PagedResponse<StudentResponseDTO> students = studentService.getAllStudents(page, size);
 
         return ResponseEntity.ok(
-                ApiResponse.success(
-                        "Students retrieved successfully", students));
+                ApiResponse.success("Students retrieved successfully", students));
     }
 
     /**
@@ -82,15 +84,15 @@ public class StudentController {
      */
     @GetMapping("/class/{className}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
-    public ResponseEntity<ApiResponse<List<StudentResponseDTO>>> getStudentsByClass(
-            @PathVariable String className) {
+    public ResponseEntity<ApiResponse<PagedResponse<StudentResponseDTO>>> getStudentsByClass(
+            @PathVariable String className,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
 
-        List<StudentResponseDTO> students =
-                studentService.getStudentsByClass(className);
+        PagedResponse<StudentResponseDTO> students = studentService.getStudentsByClass(className, page, size);
 
         return ResponseEntity.ok(
-                ApiResponse.success(
-                        "Students retrieved successfully", students));
+                ApiResponse.success("Students retrieved successfully", students));
     }
 
     /**

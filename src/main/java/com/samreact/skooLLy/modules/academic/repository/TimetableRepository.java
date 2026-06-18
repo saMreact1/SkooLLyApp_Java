@@ -31,13 +31,14 @@ public interface TimetableRepository
 
     // Check for scheduling conflicts
     // Same classroom, same day, overlapping time
-    boolean existsByClassroomIdAndTermIdAndDayOfWeekAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
+    // Two intervals [a1,a2] and [b1,b2] overlap iff a1 < b2 && a2 > b1
+    boolean existsByClassroomIdAndTermIdAndDayOfWeekAndStartTimeLessThanAndEndTimeGreaterThan(
             Long classroomId, Long termId,
             DayOfWeek dayOfWeek,
             LocalTime endTime, LocalTime startTime);
 
     // Check teacher conflict
-    boolean existsByTeacherIdAndTermIdAndDayOfWeekAndStartTimeLessThanEqualAndEndTimeGreaterThanEqual(
+    boolean existsByTeacherIdAndTermIdAndDayOfWeekAndStartTimeLessThanAndEndTimeGreaterThan(
             Long teacherId, Long termId,
             DayOfWeek dayOfWeek,
             LocalTime endTime, LocalTime startTime);

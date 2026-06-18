@@ -1,5 +1,6 @@
 package com.samreact.skooLLy.modules.student.service;
 
+import com.samreact.skooLLy.common.response.PagedResponse;
 import com.samreact.skooLLy.modules.student.dto.CreateStudentRequestDTO;
 import com.samreact.skooLLy.modules.student.dto.StudentResponseDTO;
 import com.samreact.skooLLy.modules.student.dto.UpdateStudentRequestDTO;
@@ -13,9 +14,9 @@ public interface StudentService {
 
     StudentResponseDTO getStudentById(Long id);
 
-    List<StudentResponseDTO> getAllStudents();
+    PagedResponse<StudentResponseDTO> getAllStudents(int page, int size);
 
-    List<StudentResponseDTO> getStudentsByClass(String className);
+    PagedResponse<StudentResponseDTO> getStudentsByClass(String className, int page, int size);
 
     StudentResponseDTO updateStudent(Long id, UpdateStudentRequestDTO request);
 
