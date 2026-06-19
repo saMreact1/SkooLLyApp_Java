@@ -13,6 +13,8 @@ public interface TeacherService {
 
     TeacherResponseDTO getTeacherById(Long id);
 
+    TeacherResponseDTO getMyTeacherProfile();
+
     PagedResponse<TeacherResponseDTO> getAllTeachers(int page, int size);
 
     TeacherResponseDTO updateTeacher(Long id, UpdateTeacherRequestDTO request);

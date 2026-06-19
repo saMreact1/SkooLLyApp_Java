@@ -236,12 +236,6 @@ public class UserServiceImpl implements UserService {
                         "Current class is required for students",
                         HttpStatus.BAD_REQUEST);
             }
-            if (request.getCurrentSection() == null
-                    || request.getCurrentSection().isBlank()) {
-                throw new BusinessException(
-                        "Current section is required for students",
-                        HttpStatus.BAD_REQUEST);
-            }
         }
     }
 
@@ -270,7 +264,6 @@ public class UserServiceImpl implements UserService {
                                         ? request.getAdmissionDate()
                                         : LocalDate.now())
                         .currentClass(request.getCurrentClass())
-                        .currentSection(request.getCurrentSection())
                         .emergencyContactName(
                                 request.getEmergencyContactName())
                         .emergencyContactPhone(
@@ -349,6 +342,9 @@ public class UserServiceImpl implements UserService {
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
+                .schoolId(user.getSchool() != null ? user.getSchool().getId() : null)
+                .schoolName(user.getSchool() != null ? user.getSchool().getName() : null)
+                .profilePictureUrl(user.getProfilePictureUrl())
                 .role(user.getRole())
                 .enabled(user.isEnabled())
                 .createdAt(user.getCreatedAt())

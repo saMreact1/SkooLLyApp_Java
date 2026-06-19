@@ -78,6 +78,36 @@ public class StudentController {
     }
 
     /**
+     * GET the current student's own profile
+     *
+     * GET /api/students/me
+     */
+    @GetMapping("/me")
+    @PreAuthorize("hasAnyRole('STUDENT')")
+    public ResponseEntity<ApiResponse<StudentResponseDTO>> getMyStudentProfile() {
+        StudentResponseDTO student = studentService.getMyStudentProfile();
+        return ResponseEntity.ok(
+                ApiResponse.success("Student profile retrieved", student));
+    }
+
+    /**
+     * GET a student by their linked user ID
+     *
+     * GET /api/students/user/{userId}
+     */
+    @GetMapping("/user/{userId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
+    public ResponseEntity<ApiResponse<StudentResponseDTO>> getStudentByUserId(
+            @PathVariable Long userId) {
+
+        StudentResponseDTO student = studentService.getStudentByUserId(userId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Student retrieved successfully", student));
+    }
+
+    /**
      * GET all students in a specific class
      *
      * GET /api/students/class/{className}

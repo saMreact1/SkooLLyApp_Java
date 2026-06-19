@@ -19,7 +19,6 @@ public class StudentResponseDTO {
     private String admissionNumber;
     private LocalDate admissionDate;
     private String currentClass;
-    private String currentSection;
     private StudentStatus status;
     private String bloodGroup;
     private String emergencyContactName;

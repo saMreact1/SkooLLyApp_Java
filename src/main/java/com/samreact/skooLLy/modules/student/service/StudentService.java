@@ -22,6 +22,10 @@ public interface StudentService {
 
     StudentResponseDTO updateStudentStatus(Long id, StudentStatus status);
 
+    StudentResponseDTO getStudentByUserId(Long userId);
+
+    StudentResponseDTO getMyStudentProfile();
+
     void deleteStudent(Long id);
     long getStudentCount();
 }

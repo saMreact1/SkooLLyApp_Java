@@ -122,6 +122,17 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Override
     @Transactional
+    public TeacherResponseDTO getMyTeacherProfile() {
+        Long userId = currentUserService.getCurrentUserId();
+        Teacher teacher = teacherRepository
+                .findByUserIdAndDeleted(userId, false)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Teacher", "userId", userId));
+        return mapToTeacherResponseDTO(teacher);
+    }
+
+    @Override
+    @Transactional
     public PagedResponse<TeacherResponseDTO> getAllTeachers(int page, int size) {
         Long schoolId = currentUserService.getCurrentSchoolId();
 

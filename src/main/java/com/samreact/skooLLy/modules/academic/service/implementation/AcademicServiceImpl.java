@@ -6,12 +6,15 @@ import com.samreact.skooLLy.exception.DuplicateResourceException;
 import com.samreact.skooLLy.exception.ResourceNotFoundException;
 import com.samreact.skooLLy.modules.academic.dto.*;
 import com.samreact.skooLLy.modules.academic.entity.*;
+import com.samreact.skooLLy.modules.academic.entity.enums.EnrollmentStatus;
 import com.samreact.skooLLy.modules.academic.entity.enums.SessionStatus;
 import com.samreact.skooLLy.modules.academic.entity.enums.TermStatus;
 import com.samreact.skooLLy.modules.academic.repository.*;
 import com.samreact.skooLLy.modules.academic.service.AcademicService;
 import com.samreact.skooLLy.modules.school.entity.School;
 import com.samreact.skooLLy.modules.school.repository.SchoolRepository;
+import com.samreact.skooLLy.modules.student.entity.Student;
+import com.samreact.skooLLy.modules.student.repository.StudentRepository;
 import com.samreact.skooLLy.modules.teacher.entity.Teacher;
 import com.samreact.skooLLy.modules.teacher.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.samreact.skooLLy.common.response.PagedResponse;
 import com.samreact.skooLLy.common.util.PageUtil;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -40,6 +45,8 @@ public class AcademicServiceImpl implements AcademicService {
     private final ClassroomRepository classroomRepository;
     private final TeacherRepository teacherRepository;
     private final TimetableRepository timetableRepository;
+    private final StudentSubjectRepository studentSubjectRepository;
+    private final StudentRepository studentRepository;
 
     @Override
     @Transactional
@@ -442,6 +449,12 @@ public class AcademicServiceImpl implements AcademicService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Subject", "id", id));
 
+        if (subject.isDefault()) {
+            throw new BusinessException(
+                    "Cannot delete default subject. Deactivate it instead.",
+                    HttpStatus.BAD_REQUEST);
+        }
+
         subjectRepository.delete(subject);
         log.info("Subject deleted: {}", subject.getName());
     }
@@ -640,20 +653,6 @@ public class AcademicServiceImpl implements AcademicService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Teacher", "id", request.getTeacherId()));
 
-        // Check for classroom scheduling conflict
-        if (timetableRepository
-                .existsByClassroomIdAndTermIdAndDayOfWeekAndStartTimeLessThanAndEndTimeGreaterThan(
-                        request.getClassroomId(),
-                        request.getTermId(),
-                        request.getDayOfWeek(),
-                        request.getEndTime(),
-                        request.getStartTime())) {
-            throw new BusinessException(
-                    "Classroom already has a class scheduled "
-                            + "at this time",
-                    HttpStatus.CONFLICT);
-        }
-
         // Check for teacher scheduling conflict
         if (timetableRepository
                 .existsByTeacherIdAndTermIdAndDayOfWeekAndStartTimeLessThanAndEndTimeGreaterThan(
@@ -738,6 +737,65 @@ public class AcademicServiceImpl implements AcademicService {
         log.info("Timetable entry deleted: {}", id);
     }
 
+    @Override
+    @Transactional
+    public TimetableResponse updateTimetableEntry(Long id, UpdateTimetableRequest request) {
+        Long schoolId = currentUserService.getCurrentSchoolId();
+
+        Timetable timetable = timetableRepository
+                .findByIdAndSchoolId(id, schoolId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Timetable entry", "id", id));
+
+        Subject subject = subjectRepository
+                .findByIdAndSchoolId(request.getSubjectId(), schoolId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Subject", "id", request.getSubjectId()));
+
+        Teacher teacher = teacherRepository
+                .findByIdAndSchoolId(request.getTeacherId(), schoolId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Teacher", "id", request.getTeacherId()));
+
+        // Check for teacher scheduling conflict (excluding this entry)
+        if (timetableRepository
+                .existsByTeacherIdAndTermIdAndDayOfWeekAndStartTimeLessThanAndEndTimeGreaterThan(
+                        request.getTeacherId(),
+                        timetable.getTerm().getId(),
+                        request.getDayOfWeek(),
+                        request.getEndTime(),
+                        request.getStartTime())) {
+            // Exclude the current entry from the conflict check
+            boolean conflict = timetableRepository
+                    .findAllByTeacherIdAndTermId(
+                            request.getTeacherId(), timetable.getTerm().getId())
+                    .stream()
+                    .anyMatch(t -> !t.getId().equals(id)
+                            && t.getDayOfWeek() == request.getDayOfWeek()
+                            && t.getStartTime().isBefore(request.getEndTime())
+                            && t.getEndTime().isAfter(request.getStartTime()));
+            if (conflict) {
+                throw new BusinessException(
+                        "Teacher already has a class scheduled at this time",
+                        HttpStatus.CONFLICT);
+            }
+        }
+
+        timetable.setSubject(subject);
+        timetable.setTeacher(teacher);
+        timetable.setDayOfWeek(request.getDayOfWeek());
+        timetable.setStartTime(request.getStartTime());
+        timetable.setEndTime(request.getEndTime());
+
+        Timetable saved = timetableRepository.save(timetable);
+        log.info("Timetable entry updated: {} {} - {} {}",
+                timetable.getClassroom().getName(),
+                timetable.getClassroom().getSection(),
+                request.getDayOfWeek(), request.getStartTime());
+
+        return mapToTimetableResponse(saved);
+    }
+
     private TimetableResponse mapToTimetableResponse(
             Timetable timetable) {
 
@@ -802,6 +860,7 @@ public class AcademicServiceImpl implements AcademicService {
                 .description(subject.getDescription())
                 .category(subject.getCategory())
                 .isElective(subject.isElective())
+                .isDefault(subject.isDefault())
                 .active(subject.isActive())
                 .schoolName(subject.getSchool().getName())
                 .createdAt(subject.getCreatedAt())
@@ -819,6 +878,251 @@ public class AcademicServiceImpl implements AcademicService {
                 .status(term.getStatus())
                 .isCurrent(term.isCurrent())
                 .createdAt(term.getCreatedAt())
+                .build();
+    }
+
+    // ── Enrollment Operations ─────────────────────────────────
+
+    @Override
+    @Transactional
+    public List<StudentSubjectResponse> enrollStudent(
+            EnrollStudentRequest request) {
+
+        Long schoolId = currentUserService.getCurrentSchoolId();
+
+        Student student = studentRepository
+                .findByIdAndSchoolIdAndDeleted(request.getStudentId(), schoolId, false)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Student", "id", request.getStudentId()));
+
+        Term term = termRepository.findById(request.getTermId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Term", "id", request.getTermId()));
+
+        List<StudentSubjectResponse> responses = new ArrayList<>();
+
+        for (Long subjectId : request.getSubjectIds()) {
+            Subject subject = subjectRepository
+                    .findByIdAndSchoolId(subjectId, schoolId)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Subject", "id", subjectId));
+
+            if (studentSubjectRepository.existsByStudentIdAndSubjectIdAndTermIdAndDeletedFalse(
+                    student.getId(), subject.getId(), term.getId())) {
+                throw new BusinessException(
+                        "Student is already enrolled in subject: " + subject.getName(),
+                        HttpStatus.CONFLICT);
+            }
+
+            StudentSubject enrollment = StudentSubject.builder()
+                    .school(student.getSchool())
+                    .student(student)
+                    .subject(subject)
+                    .term(term)
+                    .status(EnrollmentStatus.ENROLLED)
+                    .build();
+
+            StudentSubject saved = studentSubjectRepository.save(enrollment);
+            log.info("Student {} enrolled in subject {} for term {}",
+                    student.getAdmissionNumber(), subject.getName(), term.getName());
+
+            responses.add(mapToStudentSubjectResponse(saved));
+        }
+
+        return responses;
+    }
+
+    @Override
+    @Transactional
+    public List<StudentSubjectResponse> enrollMe(
+            List<Long> subjectIds, Long termId) {
+
+        Long schoolId = currentUserService.getCurrentSchoolId();
+        Long userId = currentUserService.getCurrentUserId();
+
+        Student student = studentRepository
+                .findByUserIdAndDeleted(userId, false)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Student", "userId", userId));
+
+        Term term = termRepository.findById(termId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Term", "id", termId));
+
+        List<StudentSubjectResponse> responses = new ArrayList<>();
+
+        for (Long subjectId : subjectIds) {
+            Subject subject = subjectRepository
+                    .findByIdAndSchoolId(subjectId, schoolId)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Subject", "id", subjectId));
+
+            Optional<StudentSubject> existing = studentSubjectRepository
+                    .findByStudentIdAndSubjectIdAndTermIdAndDeletedFalse(
+                            student.getId(), subject.getId(), term.getId());
+
+            if (existing.isPresent()) {
+                StudentSubject enrollment = existing.get();
+                if (enrollment.getStatus() == EnrollmentStatus.DROPPED) {
+                    enrollment.setStatus(EnrollmentStatus.ENROLLED);
+                    StudentSubject saved = studentSubjectRepository.save(enrollment);
+                    log.info("Student {} re-enrolled in subject {} for term {}",
+                            student.getAdmissionNumber(), subject.getName(), term.getName());
+                    responses.add(mapToStudentSubjectResponse(saved));
+                }
+                continue;
+            }
+
+            StudentSubject enrollment = StudentSubject.builder()
+                    .school(student.getSchool())
+                    .student(student)
+                    .subject(subject)
+                    .term(term)
+                    .status(EnrollmentStatus.ENROLLED)
+                    .build();
+
+            StudentSubject saved = studentSubjectRepository.save(enrollment);
+            log.info("Student {} self-enrolled in subject {} for term {}",
+                    student.getAdmissionNumber(), subject.getName(), term.getName());
+
+            responses.add(mapToStudentSubjectResponse(saved));
+        }
+
+        return responses;
+    }
+
+    @Override
+    @Transactional
+    public void dropMySubject(Long subjectId, Long termId) {
+        Long userId = currentUserService.getCurrentUserId();
+
+        Student student = studentRepository
+                .findByUserIdAndDeleted(userId, false)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Student", "userId", userId));
+
+        StudentSubject enrollment = studentSubjectRepository
+                .findByStudentIdAndSubjectIdAndTermIdAndDeletedFalse(
+                        student.getId(), subjectId, termId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Enrollment", "student+subject+term",
+                        student.getId() + "+" + subjectId + "+" + termId));
+
+        enrollment.setStatus(EnrollmentStatus.DROPPED);
+        studentSubjectRepository.save(enrollment);
+        log.info("Student {} dropped from subject {} for term {}",
+                student.getAdmissionNumber(), subjectId, termId);
+    }
+
+    @Override
+    @Transactional
+    public void dropStudentFromSubject(Long studentId, Long subjectId, Long termId) {
+        Long schoolId = currentUserService.getCurrentSchoolId();
+
+        StudentSubject enrollment = studentSubjectRepository
+                .findByStudentIdAndSubjectIdAndTermIdAndDeletedFalse(
+                        studentId, subjectId, termId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Enrollment", "student+subject+term",
+                        studentId + "+" + subjectId + "+" + termId));
+
+        if (enrollment.getSchool().getId() != schoolId) {
+            throw new BusinessException(
+                    "Enrollment does not belong to this school",
+                    HttpStatus.FORBIDDEN);
+        }
+
+        enrollment.setStatus(EnrollmentStatus.DROPPED);
+        studentSubjectRepository.save(enrollment);
+        log.info("Student {} dropped from subject {} for term {}",
+                studentId, subjectId, termId);
+    }
+
+    @Override
+    @Transactional
+    public List<StudentSubjectResponse> getStudentSubjects(
+            Long studentId, Long termId) {
+
+        Long schoolId = currentUserService.getCurrentSchoolId();
+
+        Student student = studentRepository
+                .findByIdAndSchoolIdAndDeleted(studentId, schoolId, false)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Student", "id", studentId));
+
+        return studentSubjectRepository
+                .findAllByStudentIdAndTermIdAndStatusAndDeletedFalse(
+                        student.getId(), termId, EnrollmentStatus.ENROLLED)
+                .stream()
+                .map(this::mapToStudentSubjectResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public List<StudentSubjectResponse> getMyStudentSubjects(Long termId) {
+        Long userId = currentUserService.getCurrentUserId();
+
+        Student student = studentRepository
+                .findByUserIdAndDeleted(userId, false)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Student", "userId", userId));
+
+        return studentSubjectRepository
+                .findAllByStudentIdAndTermIdAndStatusAndDeletedFalse(
+                        student.getId(), termId, EnrollmentStatus.ENROLLED)
+                .stream()
+                .map(this::mapToStudentSubjectResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public List<EnrolledStudentResponse> getSubjectStudents(
+            Long subjectId, Long termId) {
+
+        Long schoolId = currentUserService.getCurrentSchoolId();
+
+        Subject subject = subjectRepository
+                .findByIdAndSchoolId(subjectId, schoolId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Subject", "id", subjectId));
+
+        return studentSubjectRepository
+                .findAllBySubjectIdAndTermIdAndDeletedFalse(subject.getId(), termId)
+                .stream()
+                .map(this::mapToEnrolledStudentResponse)
+                .toList();
+    }
+
+    private StudentSubjectResponse mapToStudentSubjectResponse(
+            StudentSubject enrollment) {
+        return StudentSubjectResponse.builder()
+                .id(enrollment.getId())
+                .studentId(enrollment.getStudent().getId())
+                .studentName(enrollment.getStudent().getUser().getFirstName()
+                        + " " + enrollment.getStudent().getUser().getLastName())
+                .admissionNumber(enrollment.getStudent().getAdmissionNumber())
+                .subjectId(enrollment.getSubject().getId())
+                .subjectName(enrollment.getSubject().getName())
+                .subjectCode(enrollment.getSubject().getCode())
+                .termId(enrollment.getTerm().getId())
+                .termName(enrollment.getTerm().getName())
+                .status(enrollment.getStatus())
+                .enrolledAt(enrollment.getEnrolledAt())
+                .build();
+    }
+
+    private EnrolledStudentResponse mapToEnrolledStudentResponse(
+            StudentSubject enrollment) {
+        return EnrolledStudentResponse.builder()
+                .id(enrollment.getId())
+                .studentId(enrollment.getStudent().getId())
+                .studentName(enrollment.getStudent().getUser().getFirstName()
+                        + " " + enrollment.getStudent().getUser().getLastName())
+                .admissionNumber(enrollment.getStudent().getAdmissionNumber())
+                .status(enrollment.getStatus())
+                .enrolledAt(enrollment.getEnrolledAt())
                 .build();
     }
 }

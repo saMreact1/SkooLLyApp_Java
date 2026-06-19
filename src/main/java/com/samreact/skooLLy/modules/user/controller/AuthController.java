@@ -2,6 +2,7 @@ package com.samreact.skooLLy.modules.user.controller;
 
 import com.samreact.skooLLy.common.response.ApiResponse;
 import com.samreact.skooLLy.config.CurrentUserService;
+import com.samreact.skooLLy.modules.academic.repository.ClassroomRepository;
 import com.samreact.skooLLy.modules.school.dto.CreateSchoolRequestDTO;
 import com.samreact.skooLLy.modules.school.dto.SchoolResponseDTO;
 import com.samreact.skooLLy.modules.school.service.SchoolService;
@@ -14,6 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/auth")
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final UserService userService;
     private final SchoolService schoolService;
+    private final ClassroomRepository classroomRepository;
 
     /**
      * STEP 1 — Check email and school name
@@ -116,5 +121,24 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponseDTO>> login(@Valid @RequestBody LoginRequestDTO request) {
         AuthResponseDTO response = userService.login(request);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Login successful", response));
+    }
+
+    /**
+     * GET school classrooms (public — used during registration)
+     *
+     * GET /api/auth/school/{schoolId}/classrooms
+     */
+    @GetMapping("/school/{schoolId}/classrooms")
+    public ResponseEntity<ApiResponse<List<String>>> getSchoolClassrooms(
+            @PathVariable Long schoolId) {
+
+        List<String> classrooms = classroomRepository
+                .findAllBySchoolId(schoolId)
+                .stream()
+                .map(c -> c.getName())
+                .toList();
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Classrooms retrieved", classrooms));
     }
 }

@@ -2,6 +2,7 @@ package com.samreact.skooLLy.modules.academic.controller;
 
 import com.samreact.skooLLy.common.response.ApiResponse;
 import com.samreact.skooLLy.common.response.PagedResponse;
+import com.samreact.skooLLy.config.CurrentUserService;
 import com.samreact.skooLLy.modules.academic.dto.*;
 import com.samreact.skooLLy.modules.academic.service.AcademicService;
 import jakarta.validation.Valid;
@@ -20,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AcademicController {
     private final AcademicService academicService;
+    private final CurrentUserService currentUserService;
 
     /**
      * POST /api/academic/sessions
@@ -42,7 +44,7 @@ public class AcademicController {
      * GET /api/academic/sessions
      */
     @GetMapping("/sessions")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ApiResponse<PagedResponse<SessionResponse>>> getAllSessions(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -57,7 +59,7 @@ public class AcademicController {
      * GET /api/academic/sessions/{id}
      */
     @GetMapping("/sessions/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ApiResponse<SessionResponse>> getSessionById(
             @PathVariable Long id) {
 
@@ -73,7 +75,7 @@ public class AcademicController {
      * GET /api/academic/sessions/current
      */
     @GetMapping("/sessions/current")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ApiResponse<SessionResponse>> getCurrentSession() {
 
         SessionResponse session =
@@ -136,7 +138,7 @@ public class AcademicController {
      * GET /api/academic/terms/{id}
      */
     @GetMapping("/terms/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ApiResponse<TermResponse>> getTermById(
             @PathVariable Long id) {
 
@@ -151,7 +153,7 @@ public class AcademicController {
      * GET /api/academic/sessions/{sessionId}/terms
      */
     @GetMapping("/sessions/{sessionId}/terms")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ApiResponse<List<TermResponse>>> getTermsBySession(
             @PathVariable Long sessionId) {
 
@@ -167,7 +169,7 @@ public class AcademicController {
      * GET /api/academic/terms/current
      */
     @GetMapping("/terms/current")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ApiResponse<TermResponse>> getCurrentTerm() {
 
         TermResponse term = academicService.getCurrentTerm();
@@ -229,7 +231,7 @@ public class AcademicController {
      * GET /api/academic/subjects
      */
     @GetMapping("/subjects")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ApiResponse<PagedResponse<SubjectResponse>>> getAllSubjects(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -244,7 +246,7 @@ public class AcademicController {
      * GET /api/academic/subjects/{id}
      */
     @GetMapping("/subjects/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ApiResponse<SubjectResponse>> getSubjectById(
             @PathVariable Long id) {
 
@@ -260,7 +262,7 @@ public class AcademicController {
      * GET /api/academic/subjects/electives
      */
     @GetMapping("/subjects/electives")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ApiResponse<List<SubjectResponse>>> getElectiveSubjects() {
 
         List<SubjectResponse> subjects =
@@ -319,7 +321,7 @@ public class AcademicController {
     }
 
     @GetMapping("/classrooms")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ApiResponse<PagedResponse<ClassroomResponse>>> getAllClassrooms(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -331,7 +333,7 @@ public class AcademicController {
     }
 
     @GetMapping("/classrooms/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ApiResponse<ClassroomResponse>> getClassroomById(
             @PathVariable Long id) {
 
@@ -344,7 +346,7 @@ public class AcademicController {
     }
 
     @GetMapping("/classrooms/level/{level}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ApiResponse<List<ClassroomResponse>>> getClassroomsByLevel(
             @PathVariable String level) {
 
@@ -408,7 +410,7 @@ public class AcademicController {
     }
 
     @GetMapping("/timetable/term/{termId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ApiResponse<List<TimetableResponse>>> getTimetableByTerm(
             @PathVariable Long termId) {
 
@@ -422,7 +424,7 @@ public class AcademicController {
     }
 
     @GetMapping("/timetable/classroom/{classroomId}/term/{termId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ApiResponse<List<TimetableResponse>>> getTimetableByClassroom(
             @PathVariable Long classroomId,
             @PathVariable Long termId) {
@@ -438,7 +440,7 @@ public class AcademicController {
     }
 
     @GetMapping("/timetable/teacher/{teacherId}/term/{termId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ApiResponse<List<TimetableResponse>>> getTimetableByTeacher(
             @PathVariable Long teacherId,
             @PathVariable Long termId) {
@@ -453,6 +455,20 @@ public class AcademicController {
                         timetable));
     }
 
+    @PutMapping("/timetable/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<TimetableResponse>> updateTimetableEntry(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateTimetableRequest request) {
+
+        TimetableResponse updated =
+                academicService.updateTimetableEntry(id, request);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Timetable entry updated successfully", updated));
+    }
+
     @DeleteMapping("/timetable/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Object>> deleteTimetableEntry(
@@ -463,5 +479,127 @@ public class AcademicController {
         return ResponseEntity.ok(
                 ApiResponse.success(
                         "Timetable entry deleted successfully"));
+    }
+
+    // ── Enrollment Endpoints ──────────────────────────────────
+
+    /**
+     * POST /api/academic/enrollments/me
+     * Student self-enrollment
+     */
+    @PostMapping("/enrollments/me")
+    @PreAuthorize("hasAnyRole('STUDENT')")
+    public ResponseEntity<ApiResponse<List<StudentSubjectResponse>>> enrollMe(
+            @RequestBody EnrollMeRequest request) {
+
+        List<StudentSubjectResponse> enrollments =
+                academicService.enrollMe(request.getSubjectIds(), request.getTermId());
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success(
+                        "Enrolled successfully", enrollments));
+    }
+
+    /**
+     * DELETE /api/academic/enrollments/me?subjectId=&termId=
+     * Student self-drop
+     */
+    @DeleteMapping("/enrollments/me")
+    @PreAuthorize("hasAnyRole('STUDENT')")
+    public ResponseEntity<ApiResponse<Object>> dropMySubject(
+            @RequestParam Long subjectId,
+            @RequestParam Long termId) {
+
+        academicService.dropMySubject(subjectId, termId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Dropped from subject successfully"));
+    }
+
+    /**
+     * GET /api/academic/enrollments/me/term/{termId}
+     * Get current student's enrolled subjects for a term
+     */
+    @GetMapping("/enrollments/me/term/{termId}")
+    @PreAuthorize("hasAnyRole('STUDENT')")
+    public ResponseEntity<ApiResponse<List<StudentSubjectResponse>>> getMyEnrolledSubjects(
+            @PathVariable Long termId) {
+
+        List<StudentSubjectResponse> subjects =
+                academicService.getMyStudentSubjects(termId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Enrolled subjects retrieved", subjects));
+    }
+
+    /**
+     * POST /api/academic/enrollments
+     */
+    @PostMapping("/enrollments")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<List<StudentSubjectResponse>>> enrollStudent(
+            @Valid @RequestBody EnrollStudentRequest request) {
+
+        List<StudentSubjectResponse> enrollments =
+                academicService.enrollStudent(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success(
+                        "Student enrolled successfully", enrollments));
+    }
+
+    /**
+     * GET /api/academic/enrollments/student/{studentId}/term/{termId}
+     */
+    @GetMapping("/enrollments/student/{studentId}/term/{termId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
+    public ResponseEntity<ApiResponse<List<StudentSubjectResponse>>> getStudentSubjects(
+            @PathVariable Long studentId,
+            @PathVariable Long termId) {
+
+        List<StudentSubjectResponse> subjects =
+                academicService.getStudentSubjects(studentId, termId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Student subjects retrieved successfully", subjects));
+    }
+
+    /**
+     * GET /api/academic/enrollments/subject/{subjectId}/term/{termId}
+     */
+    @GetMapping("/enrollments/subject/{subjectId}/term/{termId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
+    public ResponseEntity<ApiResponse<List<EnrolledStudentResponse>>> getSubjectStudents(
+            @PathVariable Long subjectId,
+            @PathVariable Long termId) {
+
+        List<EnrolledStudentResponse> students =
+                academicService.getSubjectStudents(subjectId, termId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Subject students retrieved successfully", students));
+    }
+
+    /**
+     * DELETE /api/academic/enrollments?studentId=&subjectId=&termId=
+     */
+    @DeleteMapping("/enrollments")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<Object>> dropStudentFromSubject(
+            @RequestParam Long studentId,
+            @RequestParam Long subjectId,
+            @RequestParam Long termId) {
+
+        academicService.dropStudentFromSubject(studentId, subjectId, termId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Student dropped from subject successfully"));
     }
 }

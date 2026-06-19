@@ -45,9 +45,6 @@ public class CreateStudentRequestDTO {
     @NotBlank(message = "Current class is required")
     private String currentClass;
 
-    @NotBlank(message = "Current section is required")
-    private String currentSection;
-
     // Optional fields
     private String emergencyContactName;
     private String emergencyContactPhone;

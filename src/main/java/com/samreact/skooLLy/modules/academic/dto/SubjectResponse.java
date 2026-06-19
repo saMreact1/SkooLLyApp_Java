@@ -15,6 +15,7 @@ public class SubjectResponse {
     private String description;
     private String category;
     private boolean isElective;
+    private boolean isDefault;
     private boolean active;
     private String schoolName;
     private LocalDateTime createdAt;
