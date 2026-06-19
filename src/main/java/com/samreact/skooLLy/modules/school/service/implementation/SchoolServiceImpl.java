@@ -2,6 +2,12 @@ package com.samreact.skooLLy.modules.school.service.implementation;
 
 import com.samreact.skooLLy.exception.DuplicateResourceException;
 import com.samreact.skooLLy.exception.ResourceNotFoundException;
+import com.samreact.skooLLy.modules.academic.entity.Classroom;
+import com.samreact.skooLLy.modules.academic.entity.Subject;
+import com.samreact.skooLLy.modules.academic.repository.ClassroomRepository;
+import com.samreact.skooLLy.modules.academic.repository.SubjectRepository;
+import com.samreact.skooLLy.modules.school.config.DefaultClassroomConfig;
+import com.samreact.skooLLy.modules.school.config.DefaultSubjectConfig;
 import com.samreact.skooLLy.modules.school.dto.CreateSchoolRequestDTO;
 import com.samreact.skooLLy.modules.school.dto.SchoolResponseDTO;
 import com.samreact.skooLLy.modules.school.entity.School;
@@ -10,7 +16,10 @@ import com.samreact.skooLLy.modules.school.service.SchoolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -18,8 +27,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SchoolServiceImpl implements SchoolService {
     private final SchoolRepository schoolRepository;
+    private final SubjectRepository subjectRepository;
+    private final ClassroomRepository classroomRepository;
 
     @Override
+    @Transactional
     public SchoolResponseDTO createSchool(CreateSchoolRequestDTO request) {
         if (schoolRepository.existsByName(request.getName())) {
             throw new DuplicateResourceException(
@@ -50,6 +62,9 @@ public class SchoolServiceImpl implements SchoolService {
         School savedSchool = schoolRepository.save(school);
         log.info("New school created: {} with code: {}",
                 savedSchool.getName(), savedSchool.getSchoolCode());
+
+        createDefaultSubjects(savedSchool);
+        createDefaultClassrooms(savedSchool);
 
         return mapToSchoolResponse(savedSchool);
     }
@@ -137,6 +152,60 @@ public class SchoolServiceImpl implements SchoolService {
                 .toUpperCase();
 
         return prefix + "-" + unique;
+    }
+
+    private void createDefaultSubjects(School school) {
+        List<DefaultSubjectConfig.DefaultSubject> defaults =
+                DefaultSubjectConfig.getSubjectsForType(school.getType());
+
+        List<Subject> subjects = new ArrayList<>();
+        for (DefaultSubjectConfig.DefaultSubject def : defaults) {
+            if (!subjectRepository.existsByNameAndSchoolId(
+                    def.name(), school.getId()) &&
+                !subjectRepository.existsByCodeAndSchoolId(
+                    def.code(), school.getId())) {
+
+                subjects.add(Subject.builder()
+                        .school(school)
+                        .name(def.name())
+                        .code(def.code())
+                        .category(def.category())
+                        .isElective(def.isElective())
+                        .isDefault(true)
+                        .build());
+            }
+        }
+
+        if (!subjects.isEmpty()) {
+            subjectRepository.saveAll(subjects);
+            log.info("Created {} default subjects for school: {}",
+                    subjects.size(), school.getName());
+        }
+    }
+
+    private void createDefaultClassrooms(School school) {
+        List<DefaultClassroomConfig.DefaultClassroom> defaults =
+                DefaultClassroomConfig.getClassroomsForType(school.getType());
+
+        List<Classroom> classrooms = new ArrayList<>();
+        for (DefaultClassroomConfig.DefaultClassroom def : defaults) {
+            if (!classroomRepository.existsByNameAndSectionAndSchoolId(
+                    def.name(), def.section(), school.getId())) {
+
+                classrooms.add(Classroom.builder()
+                        .school(school)
+                        .name(def.name())
+                        .section(def.section())
+                        .level(def.level())
+                        .build());
+            }
+        }
+
+        if (!classrooms.isEmpty()) {
+            classroomRepository.saveAll(classrooms);
+            log.info("Created {} default classrooms for school: {}",
+                    classrooms.size(), school.getName());
+        }
     }
 
     private SchoolResponseDTO mapToSchoolResponse(School school) {

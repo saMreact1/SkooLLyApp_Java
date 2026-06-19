@@ -94,7 +94,6 @@ public class StudentServiceImpl implements StudentService {
                         ? request.getAdmissionDate()
                         : LocalDate.now())
                 .currentClass(request.getCurrentClass())
-                .currentSection(request.getCurrentSection())
                 .emergencyContactName(request.getEmergencyContactName())
                 .emergencyContactPhone(request.getEmergencyContactPhone())
                 .emergencyContactRelationship(
@@ -122,6 +121,29 @@ public class StudentServiceImpl implements StudentService {
                 .findByIdAndSchoolIdAndDeleted(id, schoolId, false)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Student", "id", id));
+
+        return mapToStudentResponse(student);
+    }
+
+    @Override
+    @Transactional
+    public StudentResponseDTO getStudentByUserId(Long userId) {
+        Student student = studentRepository
+                .findByUserIdAndDeleted(userId, false)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Student", "userId", userId));
+
+        return mapToStudentResponse(student);
+    }
+
+    @Override
+    @Transactional
+    public StudentResponseDTO getMyStudentProfile() {
+        Long userId = currentUserService.getCurrentUserId();
+        Student student = studentRepository
+                .findByUserIdAndDeleted(userId, false)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Student", "userId", userId));
 
         return mapToStudentResponse(student);
     }
@@ -162,9 +184,6 @@ public class StudentServiceImpl implements StudentService {
         // Only update fields that were provided
         if (request.getCurrentClass() != null) {
             student.setCurrentClass(request.getCurrentClass());
-        }
-        if (request.getCurrentSection() != null) {
-            student.setCurrentSection(request.getCurrentSection());
         }
         if (request.getEmergencyContactName() != null) {
             student.setEmergencyContactName(
@@ -266,7 +285,6 @@ public class StudentServiceImpl implements StudentService {
                 .admissionNumber(student.getAdmissionNumber())
                 .admissionDate(student.getAdmissionDate())
                 .currentClass(student.getCurrentClass())
-                .currentSection(student.getCurrentSection())
                 .status(student.getStatus())
                 .bloodGroup(student.getBloodGroup())
                 .emergencyContactName(student.getEmergencyContactName())

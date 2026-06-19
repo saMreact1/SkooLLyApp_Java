@@ -43,12 +43,24 @@ public class TeacherController {
     }
 
     /**
+     * GET the currently logged-in teacher's profile
+     *
+     * GET /api/teachers/me
+     */
+    @GetMapping("/me")
+    @PreAuthorize("hasAnyRole('TEACHER')")
+    public ResponseEntity<ApiResponse<TeacherResponseDTO>> getMyTeacherProfile() {
+        TeacherResponseDTO teacher = teacherService.getMyTeacherProfile();
+        return ResponseEntity.ok(ApiResponse.success("Teacher profile retrieved", teacher));
+    }
+
+    /**
      * GET all teachers in the current school
      *
      * GET /api/teachers
      */
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ApiResponse<PagedResponse<TeacherResponseDTO>>> getAllTeachers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {

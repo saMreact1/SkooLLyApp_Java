@@ -54,7 +54,6 @@ public class CompleteRegistrationRequestDTO {
     // Student specific fields
     private LocalDate admissionDate;
     private String currentClass;
-    private String currentSection;
     private String emergencyContactName;
     private String emergencyContactPhone;
     private String emergencyContactRelationship;

@@ -44,9 +44,6 @@ public class Student {
     @Column
     private String currentClass;
 
-    @Column
-    private String currentSection;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default

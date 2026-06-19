@@ -65,4 +65,20 @@ public interface AcademicService {
     List<TimetableResponse> getTimetableByTeacher(Long teacherId, Long termId);
 
     void deleteTimetableEntry(Long id);
+
+    TimetableResponse updateTimetableEntry(Long id, UpdateTimetableRequest request);
+
+    List<StudentSubjectResponse> enrollStudent(EnrollStudentRequest request);
+
+    List<StudentSubjectResponse> enrollMe(List<Long> subjectIds, Long termId);
+
+    void dropMySubject(Long subjectId, Long termId);
+
+    void dropStudentFromSubject(Long studentId, Long subjectId, Long termId);
+
+    List<StudentSubjectResponse> getMyStudentSubjects(Long termId);
+
+    List<StudentSubjectResponse> getStudentSubjects(Long studentId, Long termId);
+
+    List<EnrolledStudentResponse> getSubjectStudents(Long subjectId, Long termId);
 }
