@@ -292,6 +292,7 @@ public class StudentServiceImpl implements StudentService {
                 .emergencyContactRelationship(
                         student.getEmergencyContactRelationship())
                 .schoolName(student.getSchool().getName())
+                .profilePictureUrl(student.getUser().getProfilePictureUrl())
                 .createdAt(student.getCreatedAt())
                 .build();
     }
