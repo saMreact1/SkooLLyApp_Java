@@ -25,5 +25,6 @@ public class StudentResponseDTO {
     private String emergencyContactPhone;
     private String emergencyContactRelationship;
     private String schoolName;
+    private String profilePictureUrl;
     private LocalDateTime createdAt;
 }
