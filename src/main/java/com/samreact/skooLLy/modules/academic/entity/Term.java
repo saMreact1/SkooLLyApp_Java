@@ -50,6 +50,10 @@ public class Term {
     @Builder.Default
     private boolean current = false;
 
+    @Column(name = "needs_date_update", nullable = false)
+    @Builder.Default
+    private boolean needsDateUpdate = false;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

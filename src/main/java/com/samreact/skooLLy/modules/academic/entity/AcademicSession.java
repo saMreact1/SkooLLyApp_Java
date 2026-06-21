@@ -48,6 +48,10 @@ public class AcademicSession {
     @Builder.Default
     private Boolean current = false;
 
+    @Column(name = "needs_date_update", nullable = false)
+    @Builder.Default
+    private Boolean needsDateUpdate = false;
+
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<Term> terms = new ArrayList<>();
