@@ -3,6 +3,7 @@ package com.samreact.skooLLy.modules.user.controller;
 import com.samreact.skooLLy.common.response.ApiResponse;
 import com.samreact.skooLLy.common.response.PagedResponse;
 import com.samreact.skooLLy.config.CurrentUserService;
+import com.samreact.skooLLy.modules.user.dto.UpdateProfileRequest;
 import com.samreact.skooLLy.modules.user.dto.UserResponseDTO;
 import com.samreact.skooLLy.modules.user.dto.UserSearchResult;
 import com.samreact.skooLLy.modules.user.service.UserService;
@@ -10,10 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -23,6 +21,21 @@ public class UserController {
 
     private final UserService userService;
     private final CurrentUserService currentUserService;
+
+    @GetMapping("/profile")
+    public ResponseEntity<ApiResponse<UserResponseDTO>> getMyProfile() {
+        UserResponseDTO profile = userService.getMyProfile();
+        return ResponseEntity.ok(
+                ApiResponse.success("Profile retrieved successfully", profile));
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<ApiResponse<UserResponseDTO>> updateMyProfile(
+            @RequestBody UpdateProfileRequest request) {
+        UserResponseDTO profile = userService.updateMyProfile(request);
+        return ResponseEntity.ok(
+                ApiResponse.success("Profile updated successfully", profile));
+    }
 
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'TEACHER', 'STUDENT', 'PARENT')")

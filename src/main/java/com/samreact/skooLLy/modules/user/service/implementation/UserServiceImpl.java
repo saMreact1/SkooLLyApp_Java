@@ -192,6 +192,37 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public UserResponseDTO getMyProfile() {
+        Long userId = currentUserService.getCurrentUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User", "id", userId));
+        return mapToUserResponse(user);
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDTO updateMyProfile(UpdateProfileRequest request) {
+        Long userId = currentUserService.getCurrentUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User", "id", userId));
+
+        if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
+        if (request.getLastName() != null) user.setLastName(request.getLastName());
+        if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
+        if (request.getDateOfBirth() != null) user.setDateOfBirth(request.getDateOfBirth());
+        if (request.getGender() != null) user.setGender(request.getGender());
+        if (request.getAddress() != null) user.setAddress(request.getAddress());
+        if (request.getProfilePictureUrl() != null) user.setProfilePictureUrl(request.getProfilePictureUrl());
+
+        User saved = userRepository.save(user);
+        log.info("Profile updated for user: {}", saved.getEmail());
+        return mapToUserResponse(saved);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public PagedResponse<UserSearchResult> searchUsers(String query, int page, int size) {
         Long schoolId = currentUserService.getCurrentSchoolId();
@@ -342,6 +373,9 @@ public class UserServiceImpl implements UserService {
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
+                .dateOfBirth(user.getDateOfBirth())
+                .gender(user.getGender())
+                .address(user.getAddress())
                 .schoolId(user.getSchool() != null ? user.getSchool().getId() : null)
                 .schoolName(user.getSchool() != null ? user.getSchool().getName() : null)
                 .profilePictureUrl(user.getProfilePictureUrl())
