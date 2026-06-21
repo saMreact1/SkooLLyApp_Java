@@ -7,6 +7,8 @@ public interface UserService {
     AuthResponseDTO completeRegistration(CompleteRegistrationRequestDTO request);
     AuthResponseDTO login(LoginRequestDTO request);
     UserResponseDTO getUserById(Long id);
+    UserResponseDTO getMyProfile();
+    UserResponseDTO updateMyProfile(UpdateProfileRequest request);
     CheckEmailAndSchoolResponseDTO checkEmailAndSchool(CheckEmailAndSchoolRequestDTO request);
     PagedResponse<UserSearchResult> searchUsers(String query, int page, int size);
     PagedResponse<UserResponseDTO> getUsersInSchool(int page, int size);

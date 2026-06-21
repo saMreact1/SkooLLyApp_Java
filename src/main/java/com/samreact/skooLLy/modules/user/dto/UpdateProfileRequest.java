@@ -1,28 +1,19 @@
 package com.samreact.skooLLy.modules.user.dto;
 
 import com.samreact.skooLLy.modules.user.entity.enums.Gender;
-import com.samreact.skooLLy.modules.user.entity.enums.Role;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
-@Builder
-public class UserResponseDTO {
-    private Long id;
+@Setter
+public class UpdateProfileRequest {
     private String firstName;
     private String lastName;
-    private String email;
     private String phoneNumber;
     private LocalDate dateOfBirth;
     private Gender gender;
     private String address;
-    private Long schoolId;
-    private String schoolName;
     private String profilePictureUrl;
-    private Role role;
-    private boolean enabled;
-    private LocalDateTime createdAt;
 }
