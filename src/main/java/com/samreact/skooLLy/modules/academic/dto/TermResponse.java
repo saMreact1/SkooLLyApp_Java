@@ -21,5 +21,7 @@ public class TermResponse {
     private TermStatus status;
     @JsonProperty("isCurrent")
     private boolean isCurrent;
+    @JsonProperty("needsDateUpdate")
+    private boolean needsDateUpdate;
     private LocalDateTime createdAt;
 }

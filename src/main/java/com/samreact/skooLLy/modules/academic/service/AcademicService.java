@@ -21,6 +21,8 @@ public interface AcademicService {
 
     List<TermResponse> getTermsBySession(Long sessionId);
 
+    TermResponse updateTerm(Long id, UpdateTermRequest request);
+
     TermResponse setCurrentTerm(Long id);
 
     void deleteTerm(Long id);

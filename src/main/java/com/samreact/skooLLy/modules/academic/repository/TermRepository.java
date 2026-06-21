@@ -5,6 +5,7 @@ import com.samreact.skooLLy.modules.academic.entity.enums.TermStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,4 +21,10 @@ public interface TermRepository extends JpaRepository<Term, Long> {
     List<Term> findAllBySchoolIdAndStatus(Long schoolId, TermStatus status);
 
     boolean existsByNameAndSessionId(String name, Long sessionId);
+
+    Optional<Term> findFirstBySessionIdAndStartDateAfterOrderByStartDateAsc(Long sessionId, LocalDate date);
+
+    List<Term> findAllBySessionIdAndSchoolIdOrderByStartDateAsc(Long sessionId, Long schoolId);
+
+    long countBySessionId(Long sessionId);
 }

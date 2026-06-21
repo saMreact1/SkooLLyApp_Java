@@ -20,6 +20,8 @@ public class SessionResponse {
     private SessionStatus status;
     @JsonProperty("isCurrent")
     private boolean isCurrent;
+    @JsonProperty("needsDateUpdate")
+    private boolean needsDateUpdate;
     private String schoolName;
     private List<TermResponse> terms;
     private LocalDateTime createdAt;

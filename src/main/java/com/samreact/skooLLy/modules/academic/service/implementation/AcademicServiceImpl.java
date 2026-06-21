@@ -231,6 +231,44 @@ public class AcademicServiceImpl implements AcademicService {
 
     @Override
     @Transactional
+    public TermResponse updateTerm(Long id, UpdateTermRequest request) {
+        Long schoolId = currentUserService.getCurrentSchoolId();
+
+        Term term = termRepository
+                .findByIdAndSchoolId(id, schoolId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Term", "id", id));
+
+        // Check name uniqueness within session (excluding this term)
+        List<Term> existingTerms = termRepository.findAllBySessionId(term.getSession().getId());
+        boolean nameTaken = existingTerms.stream()
+                .anyMatch(t -> !t.getId().equals(id)
+                        && t.getName().equalsIgnoreCase(request.getName()));
+        if (nameTaken) {
+            throw new DuplicateResourceException(
+                    "Term", "name", request.getName());
+        }
+
+        // Validate dates
+        if (request.getEndDate().isBefore(request.getStartDate())) {
+            throw new BusinessException(
+                    "End date cannot be before start date",
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        term.setName(request.getName());
+        term.setStartDate(request.getStartDate());
+        term.setEndDate(request.getEndDate());
+        term.setNeedsDateUpdate(false);
+
+        Term saved = termRepository.save(term);
+        log.info("Term updated: {} (id: {})", saved.getName(), id);
+
+        return mapToTermResponse(saved);
+    }
+
+    @Override
+    @Transactional
     public TermResponse setCurrentTerm(Long id) {
         Long schoolId = currentUserService.getCurrentSchoolId();
 
@@ -307,6 +345,7 @@ public class AcademicServiceImpl implements AcademicService {
                 .endDate(session.getEndDate())
                 .status(session.getStatus())
                 .isCurrent(session.getCurrent())
+                .needsDateUpdate(session.getNeedsDateUpdate())
                 .schoolName(session.getSchool().getName())
                 .terms(terms)
                 .createdAt(session.getCreatedAt())
@@ -816,6 +855,7 @@ public class AcademicServiceImpl implements AcademicService {
                 .endDate(term.getEndDate())
                 .status(term.getStatus())
                 .isCurrent(term.isCurrent())
+                .needsDateUpdate(term.isNeedsDateUpdate())
                 .createdAt(term.getCreatedAt())
                 .build();
     }

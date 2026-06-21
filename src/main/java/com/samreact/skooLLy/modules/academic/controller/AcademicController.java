@@ -163,6 +163,22 @@ public class AcademicController {
     }
 
     /**
+     * PUT /api/academic/terms/{id}
+     */
+    @PutMapping("/terms/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<TermResponse>> updateTerm(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateTermRequest request) {
+
+        TermResponse term = academicService.updateTerm(id, request);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Term updated successfully", term));
+    }
+
+    /**
      * GET /api/academic/terms/current
      */
     @GetMapping("/terms/current")
